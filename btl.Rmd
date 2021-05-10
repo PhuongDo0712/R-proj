@@ -1,0 +1,64 @@
+---
+title: "Phân tích dữ liệu khảo sát nhu cầu sử dụng cà phê ở Việt Nam"  
+author: "Đỗ Hoàng Minh Phương"
+date: "5/10/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/R/btl/")
+library(utf8)
+library(readxl)
+library(ggplot2)
+library(factoextra)
+library(FactoMineR)
+library(car)
+library(PerformanceAnalytics)
+library(olsrr)
+library(dplyr)
+```
+
+## Import dữ liệu
+
+```{r, message=FALSE, warning=FALSE}
+raw_data = read_excel("data.xlsx", col_names = F, skip = 1)
+```
+
+## Tiền xử lý dữ liệu
+
+Ta kiểm tra các dữ liệu trong cột tuổi
+```{r}
+unique(raw_data$...3)
+```
+
+Ta nhận thấy ở cột độ tuôi có các giá trị sai như 1995, 1998, 2002, ... Ta sửa lại các thông tin đó bằng đoạn code sau
+```{r}
+raw_data$...3 = ifelse(as.integer(raw_data$...3) > 100, 
+                       strtoi(substring(Sys.yearqtr(), 1, 4)) - as.integer(raw_data$...3),
+                       as.integer(raw_data$...3))
+unique(raw_data$...3)
+```
+
+## Thông tin về người trả lời khảo sát
+
+Tổng số lượng nam và nữ đã trả lời khảo sát
+```{r}
+s = raw_data %>% count(raw_data$...2)
+colnames(s) = c("Sex", "Count")
+s
+```
+
+Phân bố về độ tuổi
+```{r}
+age = raw_data %>% count(raw_data$...3)
+colnames(age) = c("Age", "Count")
+barplot(height = age$Count, width = age$Age, names.arg = unique(age$Age))
+```
+
+Phân bó vê tình trạng hôn nhân
+```{r}
+marriage_status = raw_data %>% count(raw_data$...4)
+colnames(marriage_status) = c("Status", "Count")
+marriage_status
+```
